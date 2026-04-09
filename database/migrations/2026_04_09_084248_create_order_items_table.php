@@ -13,6 +13,18 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('order_id')
+                ->constrained()
+                ->onDelete('cascade');
+            $table->foreignId('product_id')
+                ->constrained()
+                ->onDelete('restrict');
+            $table->string('product_name', 200);     // Snapshot du nom (au cas où le produit change)
+            $table->unsignedInteger('quantity');
+            $table->decimal('unit_price', 10, 0);    // Prix au moment de la commande
+            $table->decimal('total_price', 10, 0);   // quantity * unit_price
+            $table->json('options')->nullable();      // Couleur, taille commandée
+            $table->string('product_image')->nullable(); // Image snapshot
             $table->timestamps();
         });
     }

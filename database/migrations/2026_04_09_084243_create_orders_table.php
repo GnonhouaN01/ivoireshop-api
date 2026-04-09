@@ -13,7 +13,47 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('restrict');
+            $table->string('order_number', 20)->unique(); // #IVS-2025-0001
+            $table->enum('status', [
+                'pending',      // En attente de paiement
+                'paid',         // Payé, en cours de préparation
+                'processing',   // En préparation
+                'shipped',      // Expédié
+                'delivered',    // Livré
+                'cancelled',    // Annulé
+                'refunded',     // Remboursé
+            ])->default('pending');
+            $table->enum('payment_method', [
+                'cinetpay',
+                'orange_money',
+                'mtn_money',
+                'wave',
+                'cash_on_delivery',
+            ])->nullable();
+            $table->string('payment_reference')->nullable(); // Ref paiement externe
+            $table->enum('payment_status', [
+                'unpaid',
+                'paid',
+                'refunded',
+            ])->default('unpaid');
+            $table->decimal('subtotal', 10, 0);           // Avant frais livraison
+            $table->decimal('delivery_fee', 10, 0)->default(0);
+            $table->decimal('discount_amount', 10, 0)->default(0);
+            $table->decimal('total', 10, 0);              // Montant final
+            $table->text('notes')->nullable();            // Note du client
+            $table->json('shipping_address');             // Adresse livraison au moment de la commande
+            $table->timestamp('paid_at')->nullable();
+            $table->timestamp('shipped_at')->nullable();
+            $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['user_id', 'status']);
+            $table->index('order_number');
+            $table->index('payment_status');
         });
     }
 
