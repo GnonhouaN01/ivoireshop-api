@@ -9,13 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class CartItem extends Model
 {
     protected $fillable = ['cart_id', 'product_id', 'quantity', 'unit_price', 'options'];
-    protected function casts(): array
-    {
-        return [
-            'options' => 'array',
-            'unit_price' => 'decimal:0',
-        ];
-    }
+    protected $casts = [
+        'options' => 'array',
+        'unit_price' => 'decimal:0',
+    ];
 
     public function cart()
     {

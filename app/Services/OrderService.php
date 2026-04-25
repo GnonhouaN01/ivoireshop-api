@@ -2,20 +2,28 @@
 
 namespace App\Services;
 
+use App\Interfaces\OrderServiceInterface;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Cart;
+use App\Repository\OrderRepository;
 use Illuminate\Support\Facades\DB;
 
-class OrderService
+class OrderService implements OrderServiceInterface
 {
+    protected OrderRepository $orderRepository;
+
+    public function __construct(OrderRepository $orderRepository)
+    {
+        $this->orderRepository = $orderRepository;
+    }
     /**
      * Create a new order from cart
      */
     public function createFromCart(Cart $cart, array $data): Order
     {
         return DB::transaction(function () use ($cart, $data) {
-            $order = Order::create([
+            $order = $this->orderRepository->create([
                 'user_id' => $cart->user_id,
                 'order_number' => $this->generateOrderNumber(),
                 'status' => 'pending',

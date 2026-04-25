@@ -3,47 +3,87 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Repository\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
     {
-        //
+        $this->userRepository = $userRepository;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function register(RegisterRequest $request)
     {
-        //
+        $data = $request->validated();
+
+        $user = $this->userRepository->create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'client',
+            'is_active' => true,
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'token' => $token,
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function login(LoginRequest $request)
     {
-        //
+        $credentials = $request->validated();
+
+        $user = $this->userRepository->query()->where('email', $credentials['email'])->first();
+
+        if (!$user || !$user->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Identifiants invalides ou compte désactivé.',
+            ], 401);
+        }
+
+        if (!Hash::check($credentials['password'], $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Identifiants invalides ou compte désactivé.',
+            ], 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function logout(Request $request)
     {
-        //
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Déconnexion réussie.',
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function me(Request $request)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'user' => $request->user(),
+        ]);
     }
 }

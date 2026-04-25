@@ -18,6 +18,11 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'cinetpay' => [
+        'apikey' => env('CINETPAY_APIKEY'),
+        'site_id' => env('CINETPAY_SITE_ID'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

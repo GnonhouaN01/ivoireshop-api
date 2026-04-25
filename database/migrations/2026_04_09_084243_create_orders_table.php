@@ -17,28 +17,10 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('restrict');
             $table->string('order_number', 20)->unique(); // #IVS-2025-0001
-            $table->enum('status', [
-                'pending',      // En attente de paiement
-                'paid',         // Payé, en cours de préparation
-                'processing',   // En préparation
-                'shipped',      // Expédié
-                'delivered',    // Livré
-                'cancelled',    // Annulé
-                'refunded',     // Remboursé
-            ])->default('pending');
-            $table->enum('payment_method', [
-                'cinetpay',
-                'orange_money',
-                'mtn_money',
-                'wave',
-                'cash_on_delivery',
-            ])->nullable();
+            $table->string('status')->default('pending');
+            $table->string('payment_method', 50)->nullable(); // [
             $table->string('payment_reference')->nullable(); // Ref paiement externe
-            $table->enum('payment_status', [
-                'unpaid',
-                'paid',
-                'refunded',
-            ])->default('unpaid');
+            $table->string('payment_status')->default('unpaid');
             $table->decimal('subtotal', 10, 0);           // Avant frais livraison
             $table->decimal('delivery_fee', 10, 0)->default(0);
             $table->decimal('discount_amount', 10, 0)->default(0);
